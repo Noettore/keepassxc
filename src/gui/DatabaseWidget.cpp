@@ -379,6 +379,52 @@ void DatabaseWidget::setupTotp()
 
 }
 
+void DatabaseWidget::deleteEntry(Entry* entry)
+{
+    if (entry == nullptr) {
+        Q_ASSERT(false);
+        return;
+    }
+    
+    QList<Entry*> entryList;
+    const QList<QString> keyList = EntryAttributes::DefaultAttributes;
+    QMessageBox msgBox;
+    msgBox.setWindowTitle(tr("Delete referenced entry?"));
+    msgBox.setIcon(QMessageBox::Question);
+    QAbstractButton* yesButton = msgBox.addButton(QMessageBox::Yes);
+    QAbstractButton* yesAllButton = msgBox.addButton(QMessageBox::YesAll);
+    QAbstractButton* noButton = msgBox.addButton(QMessageBox::No);
+    QAbstractButton* noAllButton = msgBox.addButton(QMessageBox::NoAll);
+    msgBox.addButton(QMessageBox::Cancel);
+    QAbstractButton* clickedButton = nullptr;
+
+    for (Entry* cmpEntry : m_db->rootGroup()->entries()) {
+        if (cmpEntry->hasReferencesTo(*entry)) {
+            entryList.append(cmpEntry);
+        }
+    }
+    for(Entry* refEntry : entryList) {
+        if (clickedButton != yesAllButton) {
+            msgBox.setText(tr("Entry \"%1\" has references to entry \"%2\" that you are about to delete. Do you want to replace them with current values?").arg(refEntry->title().toHtmlEscaped(), entry->title().toHtmlEscaped()));
+            msgBox.exec();
+        }
+        clickedButton = msgBox.clickedButton();
+        if (clickedButton == yesButton || clickedButton == yesAllButton) {
+            for (const QString& key : keyList) {
+                if (refEntry->attributes()->isReference(key)) {
+                    refEntry->attributes()->set(key, entry->attributes()->value(key));
+                }
+            }
+        } else if (clickedButton == noButton) {
+            continue;
+        } else if (clickedButton == noAllButton) {
+            break;
+        } else {
+            return;
+        }
+    }
+    delete entry;
+}
 
 void DatabaseWidget::deleteEntries()
 {
@@ -416,7 +462,7 @@ void DatabaseWidget::deleteEntries()
 
         if (result == QMessageBox::Yes) {
             for (Entry* entry : asConst(selectedEntries)) {
-                delete entry;
+                deleteEntry(entry);
             }
             refreshSearch();
         }

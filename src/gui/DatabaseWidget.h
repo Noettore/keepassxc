@@ -127,6 +127,7 @@ signals:
 public slots:
     void createEntry();
     void cloneEntry();
+    void deleteEntry(Entry* entry);
     void deleteEntries();
     void setFocus();
     void copyTitle();

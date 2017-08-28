@@ -90,6 +90,7 @@ public:
     bool hasTotp() const;
     bool isExpired() const;
     bool hasReferences() const;
+    bool hasReferencesTo(const Entry& entry) const;
     EntryAttributes* attributes();
     const EntryAttributes* attributes() const;
     EntryAttachments* attachments();

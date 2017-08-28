@@ -275,6 +275,18 @@ bool Entry::hasReferences() const
     return false;
 }
 
+bool Entry::hasReferencesTo(const Entry& entry) const
+{
+    QString entryId = entry.uuid().toHex();
+    const QList<QString> keyList = EntryAttributes::DefaultAttributes;
+    for (const QString& key : keyList) {
+        if (m_attributes->isReference(key) && m_attributes->value(key).contains(entryId, Qt::CaseInsensitive)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 EntryAttributes* Entry::attributes()
 {
     return m_attributes;
