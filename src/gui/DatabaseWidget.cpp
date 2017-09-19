@@ -31,6 +31,7 @@
 #include <QProcess>
 #include <QHeaderView>
 #include <QApplication>
+#include <qt5/QtWidgets/qabstractbutton.h>
 
 #include "autotype/AutoType.h"
 #include "core/Config.h"
@@ -387,6 +388,7 @@ void DatabaseWidget::deleteEntry(Entry* entry)
     }
     
     QList<Entry*> entryList;
+    QComboBox* masterChooser = new QComboBox(this);
     const QList<QString> keyList = EntryAttributes::DefaultAttributes;
     QMessageBox msgBox;
     msgBox.setWindowTitle(tr("Delete referenced entry?"));
@@ -395,12 +397,14 @@ void DatabaseWidget::deleteEntry(Entry* entry)
     QAbstractButton* yesAllButton = msgBox.addButton(QMessageBox::YesAll);
     QAbstractButton* noButton = msgBox.addButton(QMessageBox::No);
     QAbstractButton* noAllButton = msgBox.addButton(QMessageBox::NoAll);
+    QAbstractButton* chooseButton = msgBox.addButton(tr("Choose new master entry"), QMessageBox::ActionRole);
     msgBox.addButton(QMessageBox::Cancel);
     QAbstractButton* clickedButton = nullptr;
 
     for (Entry* cmpEntry : m_db->rootGroup()->entries()) {
         if (cmpEntry->hasReferencesTo(*entry)) {
             entryList.append(cmpEntry);
+            masterChooser->addItem(cmpEntry->title().toHtmlEscaped());
         }
     }
     for(Entry* refEntry : entryList) {
@@ -419,6 +423,17 @@ void DatabaseWidget::deleteEntry(Entry* entry)
             continue;
         } else if (clickedButton == noAllButton) {
             break;
+        } else if (clickedButton == chooseButton) {
+            masterChooser->show();
+            for(Entry* changeEntry : entryList) {
+                if (changeEntry != entryList.at(masterChooser->currentIndex())) {
+                    for (const QString& key : keyList) {
+                        if (changeEntry->attributes()->isReference(key)) {
+                            changeEntry->attributes()->set(key, entryList.at(masterChooser->currentIndex())->attributes()->value(key));
+                        }
+                    }
+                }
+            }
         } else {
             return;
         }
