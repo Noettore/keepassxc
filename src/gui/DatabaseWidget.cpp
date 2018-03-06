@@ -425,7 +425,7 @@ void DatabaseWidget::deleteEntry(Entry* entry)
             break;
         } else if (clickedButton == chooseButton) {
             masterChooser->show();
-            for(Entry* changeEntry : entryList) {
+            /*for(Entry* changeEntry : entryList) {
                 if (changeEntry != entryList.at(masterChooser->currentIndex())) {
                     for (const QString& key : keyList) {
                         if (changeEntry->attributes()->isReference(key)) {
@@ -433,7 +433,7 @@ void DatabaseWidget::deleteEntry(Entry* entry)
                         }
                     }
                 }
-            }
+            }*/
         } else {
             return;
         }
